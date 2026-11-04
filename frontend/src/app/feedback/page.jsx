@@ -131,9 +131,7 @@ export default function FeedbackPage() {
           <div className="lg:col-span-5 bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 overflow-hidden">
             <div className="p-6 pb-4 border-b border-slate-100 bg-[#FEEEF0]/40 flex items-center justify-between">
               <div className="flex items-center space-x-2.5">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#392C7D] to-[#FF4667] flex items-center justify-center text-white shadow-2xs">
-                  <MessageSquareHeart className="w-4 h-4" />
-                </div>
+
                 <div>
                   <h2 className="text-sm font-bold text-slate-900">
                     Share Your Feedback

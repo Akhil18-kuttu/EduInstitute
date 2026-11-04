@@ -73,12 +73,6 @@ export default function LoginPage() {
           {/* Header matching login.html: Logo on left, Back to Home on right */}
           <div className="flex items-center justify-between mb-8">
             <EduLogo href="/login" />
-            <Link
-              href="/feedback"
-              className="text-sm font-semibold text-[#FF4667] hover:underline transition-colors"
-            >
-              Back to Home
-            </Link>
           </div>
 
           {/* Title */}
