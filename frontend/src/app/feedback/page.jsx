@@ -10,7 +10,6 @@ import {
 } from "../../lib/storage";
 import {
   Star,
-  MessageSquareHeart,
   Send,
   User,
   CheckCircle2,

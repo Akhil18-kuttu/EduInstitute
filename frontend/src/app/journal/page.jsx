@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "../../components/Navbar";
 import RichTextEditor from "../../components/RichTextEditor";
 import {
   getJournalDocuments,
   saveJournalDocument,
+  resetJournalDocuments,
   getCurrentUser,
   initializeStorage,
 } from "../../lib/storage";
@@ -16,97 +17,139 @@ import {
   User,
   Tag,
   CheckCircle2,
+  X,
+  BookOpen,
+  PlusCircle,
+  Eye,
+  ArrowRight,
+  PenLine,
 } from "lucide-react";
 
-const SAMPLE_DOCS = [
-  {
-    title: "Spring 2026 Academic Syllabus & Guidelines",
-    category: "Academic Syllabus",
-    author: "Prof. Sarah Connor",
-    html: `
-      <h2>1. Course Overview & Learning Objectives</h2>
-      <p>Welcome to the <strong>Software Systems & Architecture</strong> course at Edu Institute. In this module, students investigate component lifecycles, state architecture, and client-side data pipelines.</p>
-      
-      <h3>2. Weekly Milestones</h3>
-      <ul>
-        <li><strong>Week 1-2:</strong> App Router architecture and nested layout orchestration</li>
-        <li><strong>Week 3-4:</strong> WYSIWYG editor integration, live preview synchronization, and DOM parsing</li>
-        <li><strong>Week 5-6:</strong> High-performance client-side data stores and UX design</li>
-      </ul>
+function getExcerpt(html, maxLength = 130) {
+  if (!html) return "No content preview available.";
+  const clean = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+  if (!clean) return "No content preview available.";
+  if (clean.length <= maxLength) return clean;
+  return clean.slice(0, maxLength) + "...";
+}
 
-      <blockquote>
-        "Continuous learning is the minimum requirement for success in any field." — Brian Tracy
-      </blockquote>
-
-      <h3>3. Grading & Evaluation Scheme</h3>
-      <p>Assessment is divided into <em>Hands-on Project Lab work (40%)</em>, <em>Midterm Course Evaluation (30%)</em>, and <em>Capstone Submission (30%)</em>.</p>
-    `,
-  },
-];
+function formatDate(dateStr) {
+  if (!dateStr) return "Nov 4, 2026";
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return "Nov 4, 2026";
+  }
+}
 
 export default function JournalPage() {
-  const [selectedDocId, setSelectedDocId] = useState(null);
+  const [journals, setJournals] = useState([]);
+  const [activeModalDoc, setActiveModalDoc] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  const [title, setTitle] = useState("Spring 2026 Academic Syllabus & Guidelines");
+  // Editor Form States
+  const [title, setTitle] = useState("");
   const [category, setCategory] = useState("Academic Syllabus");
   const [author, setAuthor] = useState("Prof. Sarah Connor");
   const [contentHtml, setContentHtml] = useState("");
+  const [editingId, setEditingId] = useState(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
-  const [currentDate, setCurrentDate] = useState("");
+  const [showLivePreview, setShowLivePreview] = useState(false);
+
+  const editorSectionRef = useRef(null);
 
   useEffect(() => {
+    setIsMounted(true);
     initializeStorage();
     const user = getCurrentUser();
-
-    const now = new Date();
-    setCurrentDate(
-      now.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
-    );
-
-    const docs = getJournalDocuments();
-
-    if (docs.length > 0) {
-      setSelectedDocId(docs[0].id);
-      setTitle(docs[0].title);
-      setCategory(docs[0].category || "Academic Syllabus");
-      setAuthor(docs[0].author || (user?.fullName || "Prof. Sarah Connor"));
-      setContentHtml(docs[0].contentHtml || "");
-    } else {
-      setContentHtml(SAMPLE_DOCS[0].html);
+    if (user?.fullName) {
+      setAuthor(user.fullName);
     }
+    const docs = getJournalDocuments();
+    setJournals(docs);
+  }, []);
+
+  // Close modal on Escape key press
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setActiveModalDoc(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleSave = (e) => {
     e.preventDefault();
     if (!title.trim()) {
-      alert("Please enter a title for the journal description.");
+      alert("Please enter a title for the journal.");
+      return;
+    }
+    if (!contentHtml.trim() || contentHtml.trim() === "<p><br></p>") {
+      alert("Please enter description or content for the journal.");
       return;
     }
 
-    const savedDoc = saveJournalDocument({
-      id: selectedDocId,
+    saveJournalDocument({
+      id: editingId,
       title: title.trim(),
       category: category.trim(),
       author: author.trim() || "Edu Institute Faculty",
       contentHtml: contentHtml,
     });
 
+    // Refresh list from storage
+    const updated = getJournalDocuments();
+    setJournals(updated);
+
     setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 3000);
-    setSelectedDocId(savedDoc.id);
+    setTimeout(() => setSavedSuccess(false), 3500);
+
+    // Reset Form
+    setTitle("");
+    setContentHtml("");
+    setEditingId(null);
+    setShowLivePreview(false);
+
+    // Smooth scroll back to top of journals list
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleReset = () => {
-    if (confirm("Reset editor contents to default sample?")) {
-      const sample = SAMPLE_DOCS[0];
-      setTitle(sample.title);
-      setCategory(sample.category);
-      setAuthor(sample.author);
-      setContentHtml(sample.html);
+  const handleStartNew = () => {
+    setEditingId(null);
+    setTitle("");
+    setContentHtml("");
+    setShowLivePreview(false);
+    if (editorSectionRef.current) {
+      editorSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleEditFromModal = (doc) => {
+    setEditingId(doc.id);
+    setTitle(doc.title);
+    setCategory(doc.category || "Academic Syllabus");
+    setAuthor(doc.author || "Prof. Sarah Connor");
+    setContentHtml(doc.contentHtml || "");
+    setActiveModalDoc(null);
+    if (editorSectionRef.current) {
+      editorSectionRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  const handleResetToSamples = () => {
+    if (confirm("Reset journals to default 2 sample journals?")) {
+      const samples = resetJournalDocuments();
+      setJournals(samples);
+      setTitle("");
+      setContentHtml("");
+      setEditingId(null);
     }
   };
 
@@ -114,57 +157,164 @@ export default function JournalPage() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans antialiased">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
-        {/* Simple Page Header */}
-        <div className="mb-6 pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
+        {/* Page Top Header */}
+        <div className="pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
+            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-bold text-[#FF4667] mb-2">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Academic Publishing &amp; Curriculums</span>
+            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
-              Journal Description &amp; Content Editor
+              Academic Journals &amp; Course Syllabi
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Edit course descriptions, academic announcements, and journal syllabus details with instant live preview.
+              Browse published journals, click any card to inspect full content in a popup, or compose and add multiple new journals below.
             </p>
           </div>
+
           <div className="flex items-center space-x-2">
             <button
               type="button"
-              onClick={handleReset}
-              className="text-xs font-semibold px-3.5 py-2 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5"
+              onClick={handleStartNew}
+              className="text-xs font-bold px-4 py-2.5 bg-[#FF4667] hover:bg-[#ED1143] text-white rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer flex items-center space-x-2 shrink-0"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Add New Journal</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleResetToSamples}
+              className="text-xs font-semibold px-3 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5 shrink-0"
+              title="Reset to 2 sample journals"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-              <span>Reset to Sample</span>
+              <span className="hidden md:inline">Reset Samples</span>
             </button>
           </div>
         </div>
 
+        {/* Success Alert */}
         {savedSuccess && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center space-x-2.5 shadow-xs animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="font-semibold">
-              Journal entry saved successfully!
-            </span>
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs sm:text-sm flex items-center space-x-2.5 shadow-xs animate-in fade-in">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <div>
+              <span className="font-bold">Journal saved successfully!</span>
+              <span className="ml-1 text-emerald-700">
+                A new journal card has been added to the library above. Click the card anytime to view the full popup.
+              </span>
+            </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* Left Column: Form & Editor */}
-          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 flex flex-col space-y-4">
-            <form onSubmit={handleSave} className="space-y-4">
+        {/* SECTION 1: JOURNALS CARD DIRECTORY */}
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">
+                Published Journal Entries
+              </h2>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700">
+                {isMounted ? journals.length : 2}
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 hidden sm:block">
+              Click any card to read full document in popup
+            </p>
+          </div>
+
+          {/* Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {journals.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => setActiveModalDoc(doc)}
+                className="group relative bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-md shadow-slate-200/40 hover:shadow-xl hover:border-[#FF4667]/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  {/* Category and Date Row */}
+                  <div className="flex items-center justify-between text-xs text-slate-500 mb-3.5">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
+                      <Tag className="w-3 h-3 mr-1" />
+                      {doc.category || "Academic Syllabus"}
+                    </span>
+                    <span className="flex items-center space-x-1 text-slate-400 font-medium">
+                      <Calendar className="w-3.5 h-3.5 mr-1" />
+                      {isMounted ? formatDate(doc.createdAt || doc.updatedAt) : "Nov 4, 2026"}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#1E293B] group-hover:text-[#FF4667] transition-colors leading-snug line-clamp-2 mb-3">
+                    {doc.title}
+                  </h3>
+
+                  {/* Excerpt preview */}
+                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-3 mb-5">
+                    {getExcerpt(doc.contentHtml, 160)}
+                  </p>
+                </div>
+
+                {/* Footer of Card */}
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="truncate max-w-[150px] sm:max-w-[200px]">
+                      {doc.author || "Faculty Member"}
+                    </span>
+                  </div>
+
+                  <span className="inline-flex items-center space-x-1 text-xs font-bold text-[#FF4667] group-hover:translate-x-1 transition-transform">
+                    <span>Read Journal</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 2: COMPOSE / ADD MULTIPLE JOURNALS FORM */}
+        <section ref={editorSectionRef} className="space-y-4 pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <PenLine className="w-5 h-5 text-[#FF4667]" />
+              <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">
+                {editingId ? "Edit Journal Entry" : "Add / Compose New Journal"}
+              </h2>
+            </div>
+            {editingId && (
+              <button
+                type="button"
+                onClick={handleStartNew}
+                className="text-xs font-bold text-[#FF4667] hover:underline cursor-pointer"
+              >
+                Cancel Edit (Switch to New)
+              </button>
+            )}
+          </div>
+
+          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80">
+            <form onSubmit={handleSave} className="space-y-5">
+              {/* Journal Title */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Journal Description Title <span className="text-[#FF4667]">*</span>
+                  Journal Title <span className="text-[#FF4667]">*</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Enter journal description title"
+                  placeholder="e.g. Advanced Distributed Systems & Cloud Microservices"
                   className="w-full px-4 py-3 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* Author & Category Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div>
                   <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                     Author <span className="text-[#FF4667]">*</span>
@@ -192,6 +342,7 @@ export default function JournalPage() {
                     className="w-full px-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
                   >
                     <option value="Academic Syllabus">Academic Syllabus</option>
+                    <option value="Research & Methodology">Research & Methodology</option>
                     <option value="Course Module Overview">Course Module Overview</option>
                     <option value="Institutional Notice">Institutional Notice</option>
                     <option value="Lab & Project Manual">Lab & Project Manual</option>
@@ -199,82 +350,155 @@ export default function JournalPage() {
                 </div>
               </div>
 
+              {/* Rich Text Editor with Live Preview Toggle */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Content &amp; Description
-                </label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Content &amp; Description <span className="text-[#FF4667]">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowLivePreview(!showLivePreview)}
+                    className="text-xs font-semibold text-slate-500 hover:text-[#FF4667] transition-colors cursor-pointer flex items-center space-x-1"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    <span>{showLivePreview ? "Hide Preview" : "Show Live Preview"}</span>
+                  </button>
+                </div>
+
                 <RichTextEditor
                   value={contentHtml}
                   onChange={(newHtml) => setContentHtml(newHtml)}
-                  placeholder="Enter detailed content, guidelines, or journal description..."
+                  placeholder="Type full journal description, course learning outcomes, grading schemes, or research summaries..."
                 />
+
+                {/* Optional Live Preview Accordion */}
+                {showLivePreview && (
+                  <div className="mt-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 animate-in fade-in">
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                      Live Preview
+                    </div>
+                    {contentHtml ? (
+                      <div
+                        dangerouslySetInnerHTML={{ __html: contentHtml }}
+                        className="prose prose-slate max-w-none text-xs sm:text-sm text-slate-800 leading-relaxed [&>h1]:text-xl [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-1.5 [&>h2]:text-lg [&>h2]:font-bold [&>h2]:mt-3 [&>h2]:mb-1 [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-2.5 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-2.5 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-2.5 [&>blockquote]:border-l-4 [&>blockquote]:border-[#FF4667] [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600 [&>blockquote]:my-2 [&>pre]:bg-slate-900 [&>pre]:text-slate-100 [&>pre]:p-3 [&>pre]:rounded-lg"
+                      />
+                    ) : (
+                      <p className="text-xs text-slate-400 italic">
+                        Type content above to see live preview here...
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
-              <div className="pt-2 flex justify-end">
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
+                <button
+                  type="button"
+                  onClick={handleStartNew}
+                  className="px-5 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer text-center"
+                >
+                  Clear Form
+                </button>
+
                 <button
                   type="submit"
-                  className="inline-flex items-center space-x-2 px-6 py-3 bg-[#FF4667] hover:bg-[#ED1143] text-white text-sm font-bold rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center space-x-2 px-7 py-3 bg-[#FF4667] hover:bg-[#ED1143] text-white text-sm font-bold rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save</span>
+                  <span>{editingId ? "Update Journal" : "Save & Add Journal"}</span>
                 </button>
               </div>
             </form>
           </div>
+        </section>
+      </main>
 
-          {/* Right Column: Live Document Preview */}
-          <div className="bg-white rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80 overflow-hidden flex flex-col">
-            <div className="p-8 space-y-6 flex-1 min-h-[500px]">
-              <div className="border-b border-slate-200/80 pb-5">
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-2.5">
-                  <span className="flex items-center space-x-1 font-bold text-[#FF4667] bg-rose-50 px-3 py-1 rounded-full border border-rose-200/60">
-                    <Tag className="w-3.5 h-3.5 mr-1 text-[#FF4667]" />
-                    {category}
+      {/* POPUP MODAL: DISPLAY FULL JOURNAL ON CARD CLICK */}
+      {activeModalDoc && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setActiveModalDoc(null)}
+        >
+          <div
+            className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="px-6 sm:px-8 pt-7 pb-5 border-b border-slate-100 flex items-start justify-between gap-4">
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
+                    <Tag className="w-3 h-3 mr-1" />
+                    {activeModalDoc.category || "Academic Syllabus"}
                   </span>
-                  <span className="flex items-center space-x-1 font-medium">
-                    <Calendar className="w-3.5 h-3.5 mr-1 text-slate-400" />
-                    {currentDate || "Nov 4, 2026"}
+                  <span className="flex items-center text-slate-400 font-medium">
+                    <Calendar className="w-3.5 h-3.5 mr-1" />
+                    {formatDate(activeModalDoc.createdAt || activeModalDoc.updatedAt)}
                   </span>
                 </div>
 
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight leading-snug">
-                  {title || "Journal Description Title"}
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#1E293B] tracking-tight leading-snug">
+                  {activeModalDoc.title}
                 </h2>
 
-                <div className="flex items-center space-x-2 mt-3 text-xs text-slate-500 font-medium">
+                <div className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
                   <User className="w-3.5 h-3.5 text-slate-400" />
                   <span>
-                    Author: <strong className="text-slate-800">{author || "Edu Institute Faculty"}</strong>
+                    Author:{" "}
+                    <strong className="text-slate-800">
+                      {activeModalDoc.author || "Faculty Member"}
+                    </strong>
                   </span>
                   <span>•</span>
                   <span>Edu Institute</span>
                 </div>
               </div>
 
-              <div className="prose prose-slate max-w-none text-slate-800 leading-relaxed text-sm">
-                {contentHtml ? (
-                  <div
-                    dangerouslySetInnerHTML={{ __html: contentHtml }}
-                    className="[&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1.5 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-3 [&>blockquote]:border-l-4 [&>blockquote]:border-[#FF4667] [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600 [&>blockquote]:my-3 [&>pre]:bg-slate-900 [&>pre]:text-slate-100 [&>pre]:p-3 [&>pre]:rounded-lg [&>pre]:overflow-x-auto [&>hr]:my-4 [&>hr]:border-slate-200"
-                  />
-                ) : (
-                  <p className="text-slate-400 italic">
-                    Content will render here in real time...
-                  </p>
-                )}
-              </div>
+              {/* Close (X) button */}
+              <button
+                type="button"
+                onClick={() => setActiveModalDoc(null)}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center cursor-pointer shrink-0"
+                title="Close Popup (Esc)"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="px-6 py-3.5 bg-slate-50/80 border-t border-slate-200/80 flex items-center justify-between text-xs text-slate-500 font-medium">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span>Live View</span>
-              </span>
-              <span>Edu Institute Portal</span>
+            {/* Modal Body - Full Formatted HTML Content */}
+            <div className="px-6 sm:px-8 py-6 overflow-y-auto flex-1 text-slate-800">
+              <div
+                dangerouslySetInnerHTML={{ __html: activeModalDoc.contentHtml }}
+                className="prose prose-slate max-w-none text-sm sm:text-base leading-relaxed [&>h1]:text-2xl [&>h1]:font-bold [&>h1]:mt-4 [&>h1]:mb-2 [&>h2]:text-xl [&>h2]:font-bold [&>h2]:mt-4 [&>h2]:mb-2 [&>h3]:text-lg [&>h3]:font-semibold [&>h3]:mt-3 [&>h3]:mb-1.5 [&>p]:mb-3 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-3 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-3 [&>blockquote]:border-l-4 [&>blockquote]:border-[#FF4667] [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600 [&>blockquote]:my-3 [&>pre]:bg-slate-900 [&>pre]:text-slate-100 [&>pre]:p-4 [&>pre]:rounded-xl [&>pre]:overflow-x-auto [&>hr]:my-4 [&>hr]:border-slate-200"
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 sm:px-8 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+              <button
+                type="button"
+                onClick={() => handleEditFromModal(activeModalDoc)}
+                className="inline-flex items-center space-x-1.5 text-slate-700 hover:text-[#FF4667] font-bold cursor-pointer transition-colors"
+              >
+                <PenLine className="w-3.5 h-3.5" />
+                <span>Edit This Journal</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveModalDoc(null)}
+                className="px-5 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-bold rounded-xl shadow-2xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }
