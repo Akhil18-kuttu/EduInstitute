@@ -20,7 +20,12 @@ import {
   RotateCcw,
 } from "lucide-react";
 
-export default function RichTextEditor({ value, onChange, placeholder = "Enter your detailed curriculum, module syllabus, or institutional description here..." }) {
+export default function RichTextEditor({
+  value,
+  onChange,
+  placeholder = "Enter your detailed curriculum, module syllabus, or institutional description here...",
+  editorHeight = "min-h-[180px] max-h-[280px]",
+}) {
   const editorRef = useRef(null);
 
   // Sync internal innerHTML when external value changes and not focused
@@ -201,7 +206,7 @@ export default function RichTextEditor({ value, onChange, placeholder = "Enter y
         ref={editorRef}
         contentEditable
         onInput={handleInput}
-        className="min-h-[320px] max-h-[500px] overflow-y-auto p-4 focus:outline-none prose prose-slate max-w-none text-slate-800 text-sm leading-relaxed"
+        className={`${editorHeight} overflow-y-auto p-4 focus:outline-none prose prose-slate max-w-none text-slate-800 text-sm leading-relaxed`}
         data-placeholder={placeholder}
       />
     </div>

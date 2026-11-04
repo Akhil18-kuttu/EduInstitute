@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "../../components/Navbar";
 import RichTextEditor from "../../components/RichTextEditor";
 import {
@@ -19,13 +19,12 @@ import {
   CheckCircle2,
   X,
   BookOpen,
-  PlusCircle,
   Eye,
   ArrowRight,
   PenLine,
 } from "lucide-react";
 
-function getExcerpt(html, maxLength = 130) {
+function getExcerpt(html, maxLength = 140) {
   if (!html) return "No content preview available.";
   const clean = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
   if (!clean) return "No content preview available.";
@@ -61,8 +60,6 @@ export default function JournalPage() {
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [showLivePreview, setShowLivePreview] = useState(false);
 
-  const editorSectionRef = useRef(null);
-
   useEffect(() => {
     setIsMounted(true);
     initializeStorage();
@@ -74,7 +71,7 @@ export default function JournalPage() {
     setJournals(docs);
   }, []);
 
-  // Close modal on Escape key press
+  // Close modal on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
@@ -111,24 +108,18 @@ export default function JournalPage() {
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3500);
 
-    // Reset Form
+    // Reset Form for next entry
     setTitle("");
     setContentHtml("");
     setEditingId(null);
     setShowLivePreview(false);
-
-    // Smooth scroll back to top of journals list
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleStartNew = () => {
+  const handleClearForm = () => {
     setEditingId(null);
     setTitle("");
     setContentHtml("");
     setShowLivePreview(false);
-    if (editorSectionRef.current) {
-      editorSectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
   };
 
   const handleEditFromModal = (doc) => {
@@ -138,18 +129,13 @@ export default function JournalPage() {
     setAuthor(doc.author || "Prof. Sarah Connor");
     setContentHtml(doc.contentHtml || "");
     setActiveModalDoc(null);
-    if (editorSectionRef.current) {
-      editorSectionRef.current.scrollIntoView({ behavior: "smooth" });
-    }
   };
 
   const handleResetToSamples = () => {
     if (confirm("Reset journals to default 2 sample journals?")) {
       const samples = resetJournalDocuments();
       setJournals(samples);
-      setTitle("");
-      setContentHtml("");
-      setEditingId(null);
+      handleClearForm();
     }
   };
 
@@ -157,39 +143,28 @@ export default function JournalPage() {
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans antialiased">
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-10">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
         {/* Page Top Header */}
         <div className="pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center space-x-2 px-3 py-1 bg-rose-50 border border-rose-200/60 rounded-full text-xs font-bold text-[#FF4667] mb-2">
-              <BookOpen className="w-3.5 h-3.5" />
-              <span>Academic Publishing &amp; Curriculums</span>
-            </div>
+
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
               Academic Journals &amp; Course Syllabi
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Browse published journals, click any card to inspect full content in a popup, or compose and add multiple new journals below.
+              Compose journals on the left. Browse published journal cards on the right and click any card to inspect full content in a popup.
             </p>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               type="button"
-              onClick={handleStartNew}
-              className="text-xs font-bold px-4 py-2.5 bg-[#FF4667] hover:bg-[#ED1143] text-white rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer flex items-center space-x-2 shrink-0"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Add New Journal</span>
-            </button>
-            <button
-              type="button"
               onClick={handleResetToSamples}
-              className="text-xs font-semibold px-3 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5 shrink-0"
+              className="text-xs font-semibold px-3.5 py-2.5 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 rounded-xl transition-colors shadow-2xs cursor-pointer flex items-center space-x-1.5"
               title="Reset to 2 sample journals"
             >
               <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-              <span className="hidden md:inline">Reset Samples</span>
+              <span>Reset Samples</span>
             </button>
           </div>
         </div>
@@ -201,218 +176,222 @@ export default function JournalPage() {
             <div>
               <span className="font-bold">Journal saved successfully!</span>
               <span className="ml-1 text-emerald-700">
-                A new journal card has been added to the library above. Click the card anytime to view the full popup.
+                Added to the journals list on the right. Click the card anytime to view the full popup.
               </span>
             </div>
           </div>
         )}
 
-        {/* SECTION 1: JOURNALS CARD DIRECTORY */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">
-                Published Journal Entries
-              </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200/80 text-slate-700">
-                {isMounted ? journals.length : 2}
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Click any card to read full document in popup
-            </p>
-          </div>
-
-          {/* Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-            {journals.map((doc) => (
-              <div
-                key={doc.id}
-                onClick={() => setActiveModalDoc(doc)}
-                className="group relative bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/80 shadow-md shadow-slate-200/40 hover:shadow-xl hover:border-[#FF4667]/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  {/* Category and Date Row */}
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-3.5">
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
-                      <Tag className="w-3 h-3 mr-1" />
-                      {doc.category || "Academic Syllabus"}
-                    </span>
-                    <span className="flex items-center space-x-1 text-slate-400 font-medium">
-                      <Calendar className="w-3.5 h-3.5 mr-1" />
-                      {isMounted ? formatDate(doc.createdAt || doc.updatedAt) : "Nov 4, 2026"}
-                    </span>
-                  </div>
-
-                  {/* Title */}
-                  <h3 className="text-lg sm:text-xl font-extrabold text-[#1E293B] group-hover:text-[#FF4667] transition-colors leading-snug line-clamp-2 mb-3">
-                    {doc.title}
-                  </h3>
-
-                  {/* Excerpt preview */}
-                  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-3 mb-5">
-                    {getExcerpt(doc.contentHtml, 160)}
-                  </p>
+        {/* TWO COLUMN LAYOUT: LEFT SIDE STICKY EDITOR, RIGHT SIDE SCROLLING JOURNALS */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT SIDE: STICKY EDITOR (Remains in position while scrolling) */}
+          <div className="lg:col-span-6 lg:sticky lg:top-6 self-start space-y-4">
+            <div className="bg-white p-6 sm:p-7 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80">
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                <div className="flex items-center space-x-2">
+                  <PenLine className="w-4 h-4 text-[#FF4667]" />
+                  <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+                    {editingId ? "Edit Journal Entry" : "Compose New Journal"}
+                  </h2>
                 </div>
-
-                {/* Footer of Card */}
-                <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
-                    <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
-                      <User className="w-3.5 h-3.5" />
-                    </div>
-                    <span className="truncate max-w-[150px] sm:max-w-[200px]">
-                      {doc.author || "Faculty Member"}
-                    </span>
-                  </div>
-
-                  <span className="inline-flex items-center space-x-1 text-xs font-bold text-[#FF4667] group-hover:translate-x-1 transition-transform">
-                    <span>Read Journal</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* SECTION 2: COMPOSE / ADD MULTIPLE JOURNALS FORM */}
-        <section ref={editorSectionRef} className="space-y-4 pt-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <PenLine className="w-5 h-5 text-[#FF4667]" />
-              <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">
-                {editingId ? "Edit Journal Entry" : "Add / Compose New Journal"}
-              </h2>
-            </div>
-            {editingId && (
-              <button
-                type="button"
-                onClick={handleStartNew}
-                className="text-xs font-bold text-[#FF4667] hover:underline cursor-pointer"
-              >
-                Cancel Edit (Switch to New)
-              </button>
-            )}
-          </div>
-
-          <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-xl shadow-slate-200/60 border border-slate-200/80">
-            <form onSubmit={handleSave} className="space-y-5">
-              {/* Journal Title */}
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Journal Title <span className="text-[#FF4667]">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Advanced Distributed Systems & Cloud Microservices"
-                  className="w-full px-4 py-3 bg-slate-50/70 border border-slate-200 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all"
-                  required
-                />
-              </div>
-
-              {/* Author & Category Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Author <span className="text-[#FF4667]">*</span>
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={author}
-                      onChange={(e) => setAuthor(e.target.value)}
-                      placeholder="e.g. Prof. Sarah Connor"
-                      className="w-full pl-9 pr-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
-                      required
-                    />
-                    <User className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3 pointer-events-none" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Category
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
-                  >
-                    <option value="Academic Syllabus">Academic Syllabus</option>
-                    <option value="Research & Methodology">Research & Methodology</option>
-                    <option value="Course Module Overview">Course Module Overview</option>
-                    <option value="Institutional Notice">Institutional Notice</option>
-                    <option value="Lab & Project Manual">Lab & Project Manual</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Rich Text Editor with Live Preview Toggle */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Content &amp; Description <span className="text-[#FF4667]">*</span>
-                  </label>
+                {editingId && (
                   <button
                     type="button"
-                    onClick={() => setShowLivePreview(!showLivePreview)}
-                    className="text-xs font-semibold text-slate-500 hover:text-[#FF4667] transition-colors cursor-pointer flex items-center space-x-1"
+                    onClick={handleClearForm}
+                    className="text-xs font-bold text-[#FF4667] hover:underline cursor-pointer"
                   >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>{showLivePreview ? "Hide Preview" : "Show Live Preview"}</span>
+                    Cancel Edit
                   </button>
-                </div>
-
-                <RichTextEditor
-                  value={contentHtml}
-                  onChange={(newHtml) => setContentHtml(newHtml)}
-                  placeholder="Type full journal description, course learning outcomes, grading schemes, or research summaries..."
-                />
-
-                {/* Optional Live Preview Accordion */}
-                {showLivePreview && (
-                  <div className="mt-4 p-5 bg-slate-50 rounded-2xl border border-slate-200 animate-in fade-in">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                      Live Preview
-                    </div>
-                    {contentHtml ? (
-                      <div
-                        dangerouslySetInnerHTML={{ __html: contentHtml }}
-                        className="prose prose-slate max-w-none text-xs sm:text-sm text-slate-800 leading-relaxed [&>h1]:text-xl [&>h1]:font-bold [&>h1]:mt-3 [&>h1]:mb-1.5 [&>h2]:text-lg [&>h2]:font-bold [&>h2]:mt-3 [&>h2]:mb-1 [&>h3]:text-base [&>h3]:font-semibold [&>h3]:mt-2 [&>h3]:mb-1 [&>p]:mb-2.5 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:mb-2.5 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:mb-2.5 [&>blockquote]:border-l-4 [&>blockquote]:border-[#FF4667] [&>blockquote]:pl-4 [&>blockquote]:italic [&>blockquote]:text-slate-600 [&>blockquote]:my-2 [&>pre]:bg-slate-900 [&>pre]:text-slate-100 [&>pre]:p-3 [&>pre]:rounded-lg"
-                      />
-                    ) : (
-                      <p className="text-xs text-slate-400 italic">
-                        Type content above to see live preview here...
-                      </p>
-                    )}
-                  </div>
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={handleStartNew}
-                  className="px-5 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer text-center"
-                >
-                  Clear Form
-                </button>
+              <form onSubmit={handleSave} className="space-y-4">
+                {/* Journal Title */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Journal Title <span className="text-[#FF4667]">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Distributed Systems & Cloud Microservices"
+                    className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all"
+                    required
+                  />
+                </div>
 
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center space-x-2 px-7 py-3 bg-[#FF4667] hover:bg-[#ED1143] text-white text-sm font-bold rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>{editingId ? "Update Journal" : "Save & Add Journal"}</span>
-                </button>
-              </div>
-            </form>
+                {/* Author & Category Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Author <span className="text-[#FF4667]">*</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={author}
+                        onChange={(e) => setAuthor(e.target.value)}
+                        placeholder="e.g. Prof. Sarah Connor"
+                        className="w-full pl-8 pr-3 py-2 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
+                        required
+                      />
+                      <User className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Category
+                    </label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
+                    >
+                      <option value="Academic Syllabus">Academic Syllabus</option>
+                      <option value="Research & Methodology">Research & Methodology</option>
+                      <option value="Course Module Overview">Course Module Overview</option>
+                      <option value="Institutional Notice">Institutional Notice</option>
+                      <option value="Lab & Project Manual">Lab & Project Manual</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Content & Rich Text Editor */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Content &amp; Description <span className="text-[#FF4667]">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowLivePreview(!showLivePreview)}
+                      className="text-xs font-semibold text-slate-500 hover:text-[#FF4667] transition-colors cursor-pointer flex items-center space-x-1"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>{showLivePreview ? "Hide Preview" : "Live Preview"}</span>
+                    </button>
+                  </div>
+
+                  <RichTextEditor
+                    value={contentHtml}
+                    onChange={(newHtml) => setContentHtml(newHtml)}
+                    placeholder="Enter journal description, milestones, or syllabus details..."
+                    editorHeight="min-h-[160px] max-h-[240px]"
+                  />
+
+                  {/* Optional Live Preview inside Editor */}
+                  {showLivePreview && (
+                    <div className="mt-3 p-4 bg-slate-50 rounded-2xl border border-slate-200 max-h-[180px] overflow-y-auto animate-in fade-in">
+                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                        Live Preview
+                      </div>
+                      {contentHtml ? (
+                        <div
+                          dangerouslySetInnerHTML={{ __html: contentHtml }}
+                          className="prose prose-slate max-w-none text-xs text-slate-800 leading-relaxed [&>h1]:text-base [&>h1]:font-bold [&>h2]:text-sm [&>h2]:font-bold [&>h3]:text-xs [&>h3]:font-semibold [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>blockquote]:border-l-2 [&>blockquote]:border-[#FF4667] [&>blockquote]:pl-2 [&>blockquote]:italic"
+                        />
+                      ) : (
+                        <p className="text-xs text-slate-400 italic">
+                          Type content above to preview here...
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-2 flex items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={handleClearForm}
+                    className="px-4 py-2.5 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Clear
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="inline-flex items-center space-x-2 px-6 py-2.5 bg-[#FF4667] hover:bg-[#ED1143] text-white text-xs sm:text-sm font-bold rounded-xl shadow-lg shadow-rose-500/25 transition-all cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{editingId ? "Update Journal" : "Save & Add Journal"}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </section>
+
+          {/* RIGHT SIDE: JOURNALS CARDS (Scrolls up while editor remains sticky) */}
+          <div className="lg:col-span-6 space-y-4">
+            <div className="flex items-center justify-between pb-1">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-base sm:text-lg font-bold text-[#1E293B]">
+                  Published Journals
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-200 text-slate-700">
+                  {isMounted ? journals.length : 2}
+                </span>
+              </div>
+              <span className="text-xs text-slate-400">
+                Click card to open popup
+              </span>
+            </div>
+
+            {/* List of Journal Cards */}
+            <div className="space-y-4">
+              {journals.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => setActiveModalDoc(doc)}
+                  className="group relative bg-white rounded-3xl p-6 border border-slate-200/80 shadow-md shadow-slate-200/40 hover:shadow-xl hover:border-[#FF4667]/40 hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    {/* Category and Date Row */}
+                    <div className="flex items-center justify-between text-xs text-slate-500 mb-2.5">
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {doc.category || "Academic Syllabus"}
+                      </span>
+                      <span className="flex items-center space-x-1 text-slate-400 font-medium">
+                        <Calendar className="w-3.5 h-3.5 mr-1" />
+                        {isMounted ? formatDate(doc.createdAt || doc.updatedAt) : "Nov 4, 2026"}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-base sm:text-lg font-extrabold text-[#1E293B] group-hover:text-[#FF4667] transition-colors leading-snug line-clamp-2 mb-2">
+                      {doc.title}
+                    </h3>
+
+                    {/* Excerpt preview */}
+                    <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-3 mb-4">
+                      {getExcerpt(doc.contentHtml, 150)}
+                    </p>
+                  </div>
+
+                  {/* Footer of Card */}
+                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-xs text-slate-600 font-medium">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+                        <User className="w-3 h-3" />
+                      </div>
+                      <span className="truncate max-w-[140px] sm:max-w-[180px]">
+                        {doc.author || "Faculty Member"}
+                      </span>
+                    </div>
+
+                    <span className="inline-flex items-center space-x-1 text-xs font-bold text-[#FF4667] group-hover:translate-x-1 transition-transform">
+                      <span>View Journal</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </main>
 
       {/* POPUP MODAL: DISPLAY FULL JOURNAL ON CARD CLICK */}
@@ -428,8 +407,8 @@ export default function JournalPage() {
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="px-6 sm:px-8 pt-7 pb-5 border-b border-slate-100 flex items-start justify-between gap-4">
-              <div className="space-y-2">
+            <div className="px-6 sm:px-8 pt-6 pb-5 border-b border-slate-100 flex items-start justify-between gap-4">
+              <div className="space-y-1.5">
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="inline-flex items-center px-3 py-1 rounded-full font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
                     <Tag className="w-3 h-3 mr-1" />
@@ -485,7 +464,7 @@ export default function JournalPage() {
                 className="inline-flex items-center space-x-1.5 text-slate-700 hover:text-[#FF4667] font-bold cursor-pointer transition-colors"
               >
                 <PenLine className="w-3.5 h-3.5" />
-                <span>Edit This Journal</span>
+                <span>Edit in Left Editor</span>
               </button>
 
               <button
