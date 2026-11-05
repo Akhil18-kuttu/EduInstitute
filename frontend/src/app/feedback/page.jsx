@@ -17,6 +17,7 @@ import {
   Calendar,
   Search,
   Filter,
+  ChevronDown,
 } from "lucide-react";
 
 function formatDate(dateStr) {
@@ -53,11 +54,11 @@ export default function FeedbackPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!studentName.trim() || !courseDetails.trim() || !feedbackText.trim()) {
-      alert("Please provide student name, course details, and your feedback comments.");
+      alert("Please provide name, session details, and your feedback comments.");
       return;
     }
     if (!rating || rating === 0) {
-      alert("Please select a star rating for the course.");
+      alert("Please select a star rating for the session.");
       return;
     }
 
@@ -104,10 +105,10 @@ export default function FeedbackPage() {
         <div className="mb-8 pb-5 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
-              Course Feedback
+              Session Feedback
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Submit your academic course evaluation and view live feedback from students.
+              Submit your session evaluation and view live feedback.
             </p>
           </div>
 
@@ -156,7 +157,7 @@ export default function FeedbackPage() {
               <form onSubmit={handleSubmit} className="space-y-4 text-xs">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Student Name <span className="text-[#FF4667]">*</span>
+                    Name <span className="text-[#FF4667]">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -173,18 +174,21 @@ export default function FeedbackPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                    Course Details <span className="text-[#FF4667]">*</span>
+                    Session Details <span className="text-[#FF4667]">*</span>
                   </label>
                   <div className="relative">
-                    <input
-                      type="text"
+                    <select
                       value={courseDetails}
                       onChange={(e) => setCourseDetails(e.target.value)}
-                      placeholder="e.g. CS204 - Software Engineering & Architecture"
-                      className="w-full pl-10 pr-4 py-3 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all font-medium"
+                      className="w-full pl-10 pr-10 py-3 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all font-medium appearance-none cursor-pointer"
                       required
-                    />
+                    >
+                      <option value="" disabled>Select Session</option>
+                      <option value="Financial Management">Financial Management</option>
+                      <option value="Law Session">Law Session</option>
+                    </select>
                     <BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
+                    <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3.5 top-3.5 pointer-events-none" />
                   </div>
                 </div>
 
@@ -237,7 +241,7 @@ export default function FeedbackPage() {
                     rows={4}
                     value={feedbackText}
                     onChange={(e) => setFeedbackText(e.target.value)}
-                    placeholder="Write your feedback regarding the course curriculum, learning pace, and hands-on exercises..."
+                    placeholder="Write your feedback regarding the session details, pace, and discussion..."
                     className="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-sm focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all leading-relaxed"
                     required
                   />
@@ -263,7 +267,7 @@ export default function FeedbackPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search by student name or course..."
+                  placeholder="Search by name or session..."
                   className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#FF4667]"
                 />
               </div>

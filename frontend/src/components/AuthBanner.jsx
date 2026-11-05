@@ -58,10 +58,10 @@ export default function AuthBanner() {
         <div className="mentor-course text-center max-w-sm">
           <h3 className="text-2xl sm:text-[28px] font-bold text-slate-900 mb-3 leading-snug">
             Welcome to <br />
-            Edu<span className="text-[#FF4667]">Institute</span> Courses.
+            Edu<span className="text-[#FF4667]">Institute</span>.
           </h3>
           <p className="text-sm text-slate-600 leading-relaxed">
-            Platform designed to help organizations, educators, and learners manage, deliver, and track learning and training activities.
+            Platform designed to help organizations, teams, and participants manage, deliver, and track interactive sessions and workshops.
           </p>
         </div>
       </div>

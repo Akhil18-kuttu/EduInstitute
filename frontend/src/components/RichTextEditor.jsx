@@ -23,7 +23,7 @@ import {
 export default function RichTextEditor({
   value,
   onChange,
-  placeholder = "Enter your detailed curriculum, module syllabus, or institutional description here...",
+  placeholder = "Enter your detailed session notes, module outline, or description here...",
   editorHeight = "min-h-[180px] max-h-[280px]",
 }) {
   const editorRef = useRef(null);

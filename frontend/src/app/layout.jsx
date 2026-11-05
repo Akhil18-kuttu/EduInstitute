@@ -8,9 +8,9 @@ const inter = Inter({
 });
 
 export const metadata = {
-  title: "Edu Institute | Academic & Course Management",
+  title: "Edu Institute | Session & Service Management",
   description:
-    "Edu Institute portal featuring student authentication, course feedback, and academic journal content editing.",
+    "Edu Institute portal featuring member authentication, session feedback, and journal content editing.",
 };
 
 export default function RootLayout({ children }) {

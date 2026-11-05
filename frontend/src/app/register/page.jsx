@@ -198,7 +198,7 @@ export default function RegisterPage() {
                   I agree with{" "}
                   <button
                     type="button"
-                    onClick={() => alert("Institute Academic & Terms Policy")}
+                    onClick={() => alert("Terms of Service")}
                     className="text-[#FF4667] hover:underline font-medium"
                   >
                     Terms of Service
@@ -206,7 +206,7 @@ export default function RegisterPage() {
                   and{" "}
                   <button
                     type="button"
-                    onClick={() => alert("Student Data Privacy Policy")}
+                    onClick={() => alert("Privacy Policy")}
                     className="text-[#FF4667] hover:underline font-medium"
                   >
                     Privacy Policy
@@ -242,7 +242,7 @@ export default function RegisterPage() {
           <div className="grid grid-cols-2 gap-3 mb-6">
             <button
               type="button"
-              onClick={() => alert("Google Student SSO demonstration.")}
+              onClick={() => alert("Google SSO demonstration.")}
               className="h-11 flex items-center justify-center space-x-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 cursor-pointer"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24">
@@ -268,7 +268,7 @@ export default function RegisterPage() {
 
             <button
               type="button"
-              onClick={() => alert("Facebook Student SSO demonstration.")}
+              onClick={() => alert("Facebook SSO demonstration.")}
               className="h-11 flex items-center justify-center space-x-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors text-sm font-medium text-slate-700 cursor-pointer"
             >
               <svg className="w-4 h-4 fill-[#1877F2]" viewBox="0 0 24 24">

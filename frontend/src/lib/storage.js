@@ -1,5 +1,5 @@
 // Client-side JSON Storage Engine (No database/backend required)
-// Stores and persists Users, Session, Course Feedbacks, and Journal Documents in localStorage
+// Stores and persists Users, Session, Feedback, and Journal Documents in localStorage
 
 const USERS_KEY = "edu_institute_users";
 const SESSION_KEY = "edu_institute_current_user";
@@ -11,25 +11,25 @@ const DEFAULT_USERS = [
   {
     id: "usr_101",
     fullName: "Alex Morgan",
-    email: "student@eduinstitute.edu",
+    email: "user@sessionportal.com",
     password: "Password@123",
-    role: "Student",
+    role: "Member",
     createdAt: "2026-11-01T10:00:00Z",
   },
   {
     id: "usr_102",
     fullName: "Alex Morgan",
-    email: "student@dreamslms.edu",
+    email: "student@eduinstitute.edu",
     password: "Password@123",
-    role: "Student",
+    role: "Member",
     createdAt: "2026-11-01T10:00:00Z",
   },
   {
     id: "usr_103",
-    fullName: "Dr. Sarah Connor",
+    fullName: "Sarah Connor",
     email: "instructor@eduinstitute.edu",
     password: "Password@123",
-    role: "Faculty",
+    role: "Lead",
     createdAt: "2026-11-02T11:30:00Z",
   },
 ];
@@ -38,19 +38,19 @@ const DEFAULT_FEEDBACKS = [
   {
     id: "fb_001",
     studentName: "Alex Morgan",
-    courseDetails: "Web Engineering & Architecture",
+    courseDetails: "Financial Management",
     rating: 5,
     feedback:
-      "The curriculum provides an exceptional blend of computer science foundations and modern frontend systems. Real-world lab exercises were very engaging and clear.",
+      "The financial management session provided invaluable clarity on fiscal planning, risk assessment, and investment strategies. Highly recommended.",
     createdAt: "2026-11-03T14:20:00Z",
   },
   {
     id: "fb_002",
     studentName: "Emily Davis",
-    courseDetails: "Cloud Computing & Microservices",
+    courseDetails: "Law Session",
     rating: 4,
     feedback:
-      "Comprehensive course material with great clarity on distributed network protocols and infrastructure scaling. Highly recommended for students.",
+      "Exceptional coverage of corporate governance, compliance requirements, and regulatory contracts. The case study discussions were very engaging.",
     createdAt: "2026-11-04T09:15:00Z",
   },
 ];
@@ -58,52 +58,52 @@ const DEFAULT_FEEDBACKS = [
 const DEFAULT_DOCUMENTS = [
   {
     id: "doc_001",
-    title: "Spring 2026 Academic Syllabus & Architecture Guidelines",
-    category: "Academic Syllabus",
-    author: "Prof. Sarah Connor",
+    title: "Financial Management: Strategic Capital Allocation & Analysis",
+    category: "Financial Management",
+    author: "Sarah Connor",
     contentHtml: `
-      <h2>1. Course Overview & Learning Objectives</h2>
-      <p>Welcome to the <strong>Software Systems & Architecture</strong> curriculum at Edu Institute. In this module, students investigate component lifecycles, state architecture, and client-side data pipelines.</p>
+      <h2>1. Session Overview & Key Objectives</h2>
+      <p>Welcome to the <strong>Financial Management</strong> session. In this session, participants examine corporate financial planning, cash flow forecasting, and capital structure optimization.</p>
       
-      <h3>2. Weekly Milestones</h3>
+      <h3>2. Session Outline</h3>
       <ul>
-        <li><strong>Week 1-2:</strong> App Router architecture, component composition, and layout orchestration</li>
-        <li><strong>Week 3-4:</strong> WYSIWYG editor integration, live preview synchronization, and dynamic DOM parsing</li>
-        <li><strong>Week 5-6:</strong> High-performance client-side data stores, accessibility, and UX benchmarks</li>
+        <li><strong>Section 1:</strong> Balance sheet analysis, liquidity ratios, and working capital dynamics</li>
+        <li><strong>Section 2:</strong> Capital budgeting techniques, NPV, IRR, and risk mitigation</li>
+        <li><strong>Section 3:</strong> Long-term financing, investor reporting, and financial valuation models</li>
       </ul>
 
       <blockquote>
-        "Continuous learning is the minimum requirement for success in any field." — Brian Tracy
+        "An investment in knowledge pays the best interest." — Benjamin Franklin
       </blockquote>
 
-      <h3>3. Grading & Evaluation Scheme</h3>
-      <p>Assessment is divided into <em>Hands-on Project Lab work (40%)</em>, <em>Midterm Course Evaluation (30%)</em>, and <em>Capstone Submission (30%)</em>.</p>
+      <h3>3. Key Takeaways & Deliverables</h3>
+      <p>Session deliverables include <em>Interactive Financial Models (40%)</em>, <em>Case Study Evaluations (30%)</em>, and <em>Strategic Investment Briefings (30%)</em>.</p>
     `,
     createdAt: "2026-11-03T10:00:00Z",
     updatedAt: "2026-11-03T10:00:00Z",
   },
   {
     id: "doc_002",
-    title: "Modern Distributed Systems & Cloud Microservices Analysis",
-    category: "Research & Methodology",
-    author: "Dr. Robert Vance",
+    title: "Law Session: Corporate Governance & Legal Compliance Frameworks",
+    category: "Law Session",
+    author: "Robert Vance",
     contentHtml: `
-      <h2>1. Executive Summary & Research Scope</h2>
-      <p>This academic journal document examines modern engineering practices for horizontal scalability, API gateway orchestration, and event-driven microservices deployed across enterprise cloud environments.</p>
+      <h2>1. Executive Summary & Legal Scope</h2>
+      <p>This session examines essential legal frameworks for corporate governance, cross-border commercial contracts, intellectual property protection, and regulatory risk management.</p>
 
-      <h3>2. Core Architectural Pillars</h3>
+      <h3>2. Core Legal Pillars</h3>
       <ul>
-        <li><strong>Service Discovery:</strong> Autonomous registry synchronization and health check protocols</li>
-        <li><strong>Resilience Patterns:</strong> Circuit breakers, exponential backoff retries, and graceful degradation</li>
-        <li><strong>Data Consistency:</strong> Eventual consistency models via Saga orchestrators and distributed state sync</li>
+        <li><strong>Corporate Compliance:</strong> Statutory filings, director liabilities, and ethics frameworks</li>
+        <li><strong>Contract Law:</strong> Enforceability, indemnification clauses, and dispute resolution</li>
+        <li><strong>Regulatory Governance:</strong> Data protection directives, labor standards, and audit readiness</li>
       </ul>
 
       <blockquote>
-        "Architecture is the decisions that you wish you could get right early in a project." — Ralph Johnson
+        "The leading rule for the lawyer, as for the man of every other calling, is diligence." — Abraham Lincoln
       </blockquote>
 
-      <h3>3. Performance Benchmarks</h3>
-      <p>Benchmarked distributed systems demonstrate a <em>42% reduction in p99 latency</em> and zero downtime during blue-green deployment cycles.</p>
+      <h3>3. Practical Applications</h3>
+      <p>Participating organizations establish <em>streamlined compliance checklists</em> and proactive risk mitigation strategies for all enterprise operations.</p>
     `,
     createdAt: "2026-11-04T09:15:00Z",
     updatedAt: "2026-11-04T09:15:00Z",
@@ -134,17 +134,33 @@ function safeSet(key, value) {
 
 export function initializeStorage() {
   if (!isBrowser) return;
-  if (!localStorage.getItem(USERS_KEY)) {
-    safeSet(USERS_KEY, DEFAULT_USERS);
-  }
-  if (!localStorage.getItem(FEEDBACKS_KEY)) {
+  const currentFeedbacks = safeGet(FEEDBACKS_KEY, null);
+  if (
+    !currentFeedbacks ||
+    !Array.isArray(currentFeedbacks) ||
+    currentFeedbacks.length === 0 ||
+    currentFeedbacks.some((f) => f.courseDetails === "Web Engineering & Architecture")
+  ) {
     safeSet(FEEDBACKS_KEY, DEFAULT_FEEDBACKS);
   }
+
+  const currentUsers = safeGet(USERS_KEY, null);
+  if (
+    !currentUsers ||
+    !Array.isArray(currentUsers) ||
+    currentUsers.length === 0 ||
+    !currentUsers.some((u) => u.email === "user@sessionportal.com")
+  ) {
+    safeSet(USERS_KEY, DEFAULT_USERS);
+  }
+
   const currentDocs = safeGet(DOCUMENTS_KEY, null);
-  if (!currentDocs || !Array.isArray(currentDocs) || currentDocs.length === 0) {
-    safeSet(DOCUMENTS_KEY, DEFAULT_DOCUMENTS);
-  } else if (currentDocs.length === 1 && currentDocs[0].id === "doc_001") {
-    // Seamlessly upgrade from single sample to both sample journals
+  if (
+    !currentDocs ||
+    !Array.isArray(currentDocs) ||
+    currentDocs.length === 0 ||
+    currentDocs.some((d) => d.title && d.title.includes("Spring 2026 Academic Syllabus"))
+  ) {
     safeSet(DOCUMENTS_KEY, DEFAULT_DOCUMENTS);
   }
 }
@@ -170,7 +186,7 @@ export function registerUser({ fullName, email, password }) {
     fullName: fullName.trim(),
     email: normalizedEmail,
     password: password,
-    role: "Student",
+    role: "Member",
     createdAt: new Date().toISOString(),
   };
 
@@ -221,8 +237,8 @@ export function addFeedback(feedbackData) {
   const feedbacks = getFeedbacks();
   const newFeedback = {
     id: `fb_${Date.now()}`,
-    studentName: feedbackData.studentName || "Anonymous Student",
-    courseDetails: feedbackData.courseDetails || "Course Module",
+    studentName: feedbackData.studentName || "Anonymous Member",
+    courseDetails: feedbackData.courseDetails || "Financial Management",
     rating: Number(feedbackData.rating) || 5,
     feedback: feedbackData.feedback || "",
     createdAt: new Date().toISOString(),
@@ -245,9 +261,9 @@ export function saveJournalDocument(doc) {
   const now = new Date().toISOString();
   const documentToSave = {
     id: doc.id || `doc_${Date.now()}`,
-    title: doc.title || "Journal Title",
-    category: doc.category || "Academic Syllabus",
-    author: doc.author || "Faculty Member",
+    title: doc.title || "Session Notes",
+    category: doc.category || "Session Outline",
+    author: doc.author || "Session Lead",
     contentHtml: doc.contentHtml || "",
     createdAt: existingIndex >= 0 ? (docs[existingIndex].createdAt || now) : now,
     updatedAt: now,

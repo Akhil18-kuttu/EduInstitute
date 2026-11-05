@@ -53,8 +53,8 @@ export default function JournalPage() {
 
   // Editor Form States
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("Academic Syllabus");
-  const [author, setAuthor] = useState("Prof. Sarah Connor");
+  const [category, setCategory] = useState("Session Outline");
+  const [author, setAuthor] = useState("Sarah Connor");
   const [contentHtml, setContentHtml] = useState("");
   const [editingId, setEditingId] = useState(null);
   const [savedSuccess, setSavedSuccess] = useState(false);
@@ -97,7 +97,7 @@ export default function JournalPage() {
       id: editingId,
       title: title.trim(),
       category: category.trim(),
-      author: author.trim() || "Edu Institute Faculty",
+      author: author.trim() || "Session Lead",
       contentHtml: contentHtml,
     });
 
@@ -125,8 +125,8 @@ export default function JournalPage() {
   const handleEditFromModal = (doc) => {
     setEditingId(doc.id);
     setTitle(doc.title);
-    setCategory(doc.category || "Academic Syllabus");
-    setAuthor(doc.author || "Prof. Sarah Connor");
+    setCategory(doc.category || "Session Outline");
+    setAuthor(doc.author || "Sarah Connor");
     setContentHtml(doc.contentHtml || "");
     setActiveModalDoc(null);
   };
@@ -149,11 +149,8 @@ export default function JournalPage() {
           <div>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1E293B] tracking-tight">
-              Academic Journals &amp; Course Syllabi
+              Session Journals &amp; Outlines
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Compose journals on the left. Browse published journal cards on the right and click any card to inspect full content in a popup.
-            </p>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -215,7 +212,7 @@ export default function JournalPage() {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="e.g. Distributed Systems & Cloud Microservices"
+                    placeholder="e.g. Financial Management & Analysis"
                     className="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-[#FF4667] focus:ring-2 focus:ring-rose-100 transition-all"
                     required
                   />
@@ -232,7 +229,7 @@ export default function JournalPage() {
                         type="text"
                         value={author}
                         onChange={(e) => setAuthor(e.target.value)}
-                        placeholder="e.g. Prof. Sarah Connor"
+                        placeholder="e.g. Sarah Connor"
                         className="w-full pl-8 pr-3 py-2 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
                         required
                       />
@@ -249,11 +246,11 @@ export default function JournalPage() {
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50/70 border border-slate-200 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:border-[#FF4667]"
                     >
-                      <option value="Academic Syllabus">Academic Syllabus</option>
+                      <option value="Session Outline">Session Outline</option>
+                      <option value="Financial Management">Financial Management</option>
+                      <option value="Law Session">Law Session</option>
                       <option value="Research & Methodology">Research & Methodology</option>
-                      <option value="Course Module Overview">Course Module Overview</option>
-                      <option value="Institutional Notice">Institutional Notice</option>
-                      <option value="Lab & Project Manual">Lab & Project Manual</option>
+                      <option value="Service Overview">Service Overview</option>
                     </select>
                   </div>
                 </div>
@@ -277,7 +274,7 @@ export default function JournalPage() {
                   <RichTextEditor
                     value={contentHtml}
                     onChange={(newHtml) => setContentHtml(newHtml)}
-                    placeholder="Enter journal description, milestones, or syllabus details..."
+                    placeholder="Enter session description, milestones, or outline details..."
                     editorHeight="min-h-[160px] max-h-[240px]"
                   />
 
@@ -334,9 +331,6 @@ export default function JournalPage() {
                   {isMounted ? journals.length : 2}
                 </span>
               </div>
-              <span className="text-xs text-slate-400">
-                Click card to open popup
-              </span>
             </div>
 
             {/* List of Journal Cards */}
@@ -352,7 +346,7 @@ export default function JournalPage() {
                     <div className="flex items-center justify-between text-xs text-slate-500 mb-2.5">
                       <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
                         <Tag className="w-3 h-3 mr-1" />
-                        {doc.category || "Academic Syllabus"}
+                        {doc.category || "Session Outline"}
                       </span>
                       <span className="flex items-center space-x-1 text-slate-400 font-medium">
                         <Calendar className="w-3.5 h-3.5 mr-1" />
@@ -378,7 +372,7 @@ export default function JournalPage() {
                         <User className="w-3 h-3" />
                       </div>
                       <span className="truncate max-w-[140px] sm:max-w-[180px]">
-                        {doc.author || "Faculty Member"}
+                        {doc.author || "Session Lead"}
                       </span>
                     </div>
 
@@ -412,7 +406,7 @@ export default function JournalPage() {
                 <div className="flex items-center space-x-2 text-xs">
                   <span className="inline-flex items-center px-3 py-1 rounded-full font-bold bg-rose-50 text-[#FF4667] border border-rose-200/60">
                     <Tag className="w-3 h-3 mr-1" />
-                    {activeModalDoc.category || "Academic Syllabus"}
+                    {activeModalDoc.category || "Session Outline"}
                   </span>
                   <span className="flex items-center text-slate-400 font-medium">
                     <Calendar className="w-3.5 h-3.5 mr-1" />
@@ -429,7 +423,7 @@ export default function JournalPage() {
                   <span>
                     Author:{" "}
                     <strong className="text-slate-800">
-                      {activeModalDoc.author || "Faculty Member"}
+                      {activeModalDoc.author || "Session Lead"}
                     </strong>
                   </span>
                   <span>•</span>
@@ -464,7 +458,7 @@ export default function JournalPage() {
                 className="inline-flex items-center space-x-1.5 text-slate-700 hover:text-[#FF4667] font-bold cursor-pointer transition-colors"
               >
                 <PenLine className="w-3.5 h-3.5" />
-                <span>Edit in Left Editor</span>
+                <span>Edit Journal</span>
               </button>
 
               <button

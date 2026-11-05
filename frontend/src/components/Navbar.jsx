@@ -77,7 +77,7 @@ export default function Navbar() {
                       {user.fullName}
                     </span>
                     <span className="text-[10px] font-medium text-slate-500">
-                      {user.role || "Student"}
+                      {user.role || "Member"}
                     </span>
                   </div>
                 </div>

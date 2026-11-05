@@ -57,7 +57,7 @@ export default function LoginPage() {
   };
 
   const fillDemoAccount = () => {
-    setEmail("student@eduinstitute.edu");
+    setEmail("user@sessionportal.com");
     setPassword("Password@123");
     setError("");
   };
@@ -79,15 +79,13 @@ export default function LoginPage() {
           <h1 className="text-[32px] font-bold text-slate-900 tracking-tight mb-2">
             Sign into Your Account
           </h1>
-          <p className="text-sm text-slate-500 mb-6">
-            Access your course curriculum and academic evaluations.
-          </p>
+
 
           {/* Quick Demo Credentials Banner */}
           <div className="mb-6 p-3.5 rounded-xl bg-[#FEEEF0] border border-rose-200/60 flex items-center justify-between text-xs">
             <div className="text-slate-700">
               <span className="font-bold text-slate-900">Demo Login:</span>{" "}
-              <code className="font-mono text-[#FF4667]">student@eduinstitute.edu</code> / <code>Password@123</code>
+              <code className="font-mono text-[#FF4667]">user@sessionportal.com</code> / <code>Password@123</code>
             </div>
             <button
               type="button"
@@ -123,7 +121,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@student.eduinstitute.edu"
+                  placeholder="name@example.com"
                   className="w-full h-12 px-4 pr-11 bg-white border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#FF4667] focus:ring-1 focus:ring-[#FF4667] transition-all"
                   required
                 />
