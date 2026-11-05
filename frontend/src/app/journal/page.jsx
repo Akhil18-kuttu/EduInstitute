@@ -355,7 +355,7 @@ export default function JournalPage() {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-base sm:text-lg font-extrabold text-[#1E293B] group-hover:text-[#FF4667] transition-colors leading-snug line-clamp-2 mb-2">
+                    <h3 className="text-base sm:text-lg font-extrabold text-[#1E293B] leading-snug line-clamp-2 mb-2">
                       {doc.title}
                     </h3>
 
